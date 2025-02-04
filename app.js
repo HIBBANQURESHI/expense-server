@@ -18,7 +18,14 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: ["https://expense-management-beta-azure.vercel.app", "http://localhost:3000"], // Frontend origin
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    credentials: true, // Allow cookies and credentials
+  })
+);
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("dev"));
