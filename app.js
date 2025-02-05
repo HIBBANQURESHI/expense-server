@@ -20,8 +20,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: ["https://expense-management-beta-azure.vercel.app"], // Frontend origin
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
     credentials: true, // Allow cookies and credentials
   })
 );
