@@ -7,7 +7,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 import transactionRoutes from "./Routers/Transactions.js";
 import userRoutes from "./Routers/userRouter.js";
-import path from "path";
 
 dotenv.config();
 const app = express();
@@ -20,7 +19,7 @@ connectDB();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["https://expense-management-beta-azure.vercel.app", "http://localhost:3000"], // Frontend origin
+    origin: ["https://expense-management-beta-azure.vercel.app"], // Frontend origin
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
     credentials: true, // Allow cookies and credentials
