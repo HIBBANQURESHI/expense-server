@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", getParcels);
 router.get("/:id", getParcel);
 router.post("/", createParcel);
-router.put("/:id", deleteParcel);
-router.delete("/:id", updateParcel);
+router.put("/:id", updateParcel);
+router.delete("/:id", deleteParcel);
 
 export default router;
