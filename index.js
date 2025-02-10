@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import saleRoutes from "./routes/saleRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import parcelRoutes from "./routes/parcelRoutes.js";
+import loanRoutes from "./routes/loanRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(cors());
 app.use("/api/sales", saleRoutes);
 app.use("/api/expense", expenseRoutes);
 app.use("/api/parcel", parcelRoutes);
+app.use("/api/loan", loanRoutes);
 
 app.listen(process.env.PORT, () => {
     console.log(`Server Is Running On ${process.env.PORT}`);
