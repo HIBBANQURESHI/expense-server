@@ -7,6 +7,7 @@ import expenseRoutes from "./routes/expenseRoutes.js";
 import parcelRoutes from "./routes/parcelRoutes.js";
 import loanRoutes from "./routes/loanRoutes.js";
 import deliveryRoutes from "./routes/deliveryRoutes.js";
+import cardSaleRoutes from './routes/cardSaleRoutes.js';
 
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/api/expense", expenseRoutes);
 app.use("/api/parcel", parcelRoutes);
 app.use("/api/loan", loanRoutes);
 app.use("/api/delivery", deliveryRoutes);
+app.use("/api/cardsale", cardSaleRoutes);
 
 
 app.listen(process.env.PORT, () => {
