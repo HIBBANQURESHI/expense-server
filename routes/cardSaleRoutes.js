@@ -1,5 +1,5 @@
 import express from "express";
-import {getSales, getSale, createSale, deleteSale, updateSale, getMonthlySales} from "../controllers/cardSaleController.js";
+import {getSales, getSale, createSale, deleteSale, updateSale, getMonthlySales, getDailySales} from "../controllers/cardSaleController.js";
 
 const router = express.Router();
 
@@ -9,6 +9,8 @@ router.post("/", createSale);
 router.put("/:id", updateSale);
 router.delete("/:id", deleteSale);
 router.get("/:year/:month", getMonthlySales);
+router.get("/:year/:month/:day", getDailySales);
+
 
 
 export default router;

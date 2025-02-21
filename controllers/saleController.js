@@ -104,4 +104,25 @@ const getMonthlySales = async (req, res) => {
     }
 };
 
-export {getSales, getSale, createSale, deleteSale, updateSale, getMonthlySales}
+//getDailySales
+const getDailySales = async (req, res) => {
+    const { year, month, day } = req.params;
+    try {
+        const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
+        const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
+
+        const sales = await Sale.find({
+            createdAt: { $gte: startOfDay, $lte: endOfDay }
+        });
+
+        const totalSales = sales.length;
+        const totalAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
+
+        res.status(200).json({ totalSales, totalAmount });
+    } catch (error) {
+        console.error("Error in getDailySales:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export {getSales, getSale, createSale, deleteSale, updateSale, getMonthlySales, getDailySales}
