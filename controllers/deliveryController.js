@@ -22,9 +22,9 @@ const getDelivery = async (req, res) => {
 
 // Create Delivery
 const createDelivery = async (req, res) => {
-    const { name, description, amount } = req.body;
+    const { amount } = req.body;
     try {
-        const delivery = await Delivery.create({name, description, amount})
+        const delivery = await Delivery.create({amount})
         res.status(200).json(delivery)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,10 +51,8 @@ const deleteDelivery = async (req, res) => {
 const updateDelivery = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, amount } = req.body;
+        const { amount } = req.body;
         const delivery = await Delivery.findByIdAndUpdate({_id: id}, {
-            name,
-            description,
             amount
         });
         return res.status(200).json(delivery)        
