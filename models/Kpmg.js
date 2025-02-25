@@ -1,12 +1,7 @@
 import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
-const deliverySchema = new Schema({
-    name: {
-        type: String,
-        required: true
-    },
-
+const kpmgSchema = new Schema({
     description: {
         type: String,
         required: true
@@ -19,5 +14,5 @@ const deliverySchema = new Schema({
 
   }, {timestamps: true});
   
-const Delivery = mongoose.model('Delivery', deliverySchema);
-export default Delivery
+const Kpmg = mongoose.model('Kpmg', kpmgSchema);
+export default Kpmg

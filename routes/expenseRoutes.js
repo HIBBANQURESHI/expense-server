@@ -11,5 +11,4 @@ router.delete("/:id", deleteExpense);
 router.get("/:year/:month", getMonthlyExpense);
 router.get("/:year/:month/:day", getDailyExpense);
 
-
 export default router;

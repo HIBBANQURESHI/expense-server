@@ -8,6 +8,14 @@ import parcelRoutes from "./routes/parcelRoutes.js";
 import loanRoutes from "./routes/loanRoutes.js";
 import deliveryRoutes from "./routes/deliveryRoutes.js";
 import cardSaleRoutes from './routes/cardSaleRoutes.js';
+import BroozeRoutes from './routes/brooze.js';
+import KpmgRoutes from './routes/kpmg.js';
+import KeetaRoutes from './routes/deliveryRoutes.js';
+import hungerRoutes from './routes/hungerRoutes.js';
+import noonRoutes from './routes/noonRoutes.js';
+import jahezRoutes from './routes/jahezRoutes.js';
+import marsoolRoutes from './routes/marsoolRoutes.js';
+import ninjaRoutes from './routes/NinjaRoutes.js';
 
 
 dotenv.config();
@@ -25,6 +33,14 @@ app.use("/api/parcel", parcelRoutes);
 app.use("/api/loan", loanRoutes);
 app.use("/api/delivery", deliveryRoutes);
 app.use("/api/cardsale", cardSaleRoutes);
+app.use("/api/brooze", BroozeRoutes);
+app.use("/api/kpmg", KpmgRoutes);
+app.use("/api/keeta", KeetaRoutes);
+app.use("/api/hunger", hungerRoutes);
+app.use("/api/noon", noonRoutes);
+app.use("/api/jahez", jahezRoutes);
+app.use("/api/marsool", marsoolRoutes);
+app.use("/api/ninja", ninjaRoutes);
 
 
 app.listen(process.env.PORT, () => {

@@ -1,9 +1,9 @@
 import mongoose from 'mongoose'
-import Delivery from '../models/KeetaDelivery.js'
+import Marsool from '../models/Marsool.js'
 
 // Get all deliverys
 const getDeliveries = async (req, res) => {
-    const delivery = await Delivery.find({}).sort({createdAt: -1})
+    const delivery = await Marsool.find({}).sort({createdAt: -1})
     res.status(200).json(delivery)
 };
 
@@ -13,7 +13,7 @@ const getDelivery = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(400).json({error: "No Delivery Found"})
     }
-    const delivery = await Delivery.findById({_id: id})
+    const delivery = await Marsool.findById({_id: id})
     if(!delivery){
         return res.status(400).json({error: "No Delivery Found"})
     }
@@ -24,7 +24,7 @@ const getDelivery = async (req, res) => {
 const createDelivery = async (req, res) => {
     const { deliveries, amount } = req.body;
     try {
-        const delivery = await Delivery.create({deliveries, amount})
+        const delivery = await Marsool.create({deliveries, amount})
         res.status(200).json(delivery)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -39,7 +39,7 @@ const deleteDelivery = async (req, res) => {
         return res.status(400).json({error: "No Delivery Found"})
     }
 
-    const delivery = await Delivery.findByIdAndDelete({_id: id})
+    const delivery = await Marsool.findByIdAndDelete({_id: id})
     if(!delivery){
         return res.status(400).json({error: "No Delivery Found"})
     }
@@ -52,7 +52,7 @@ const updateDelivery = async (req, res) => {
     try {
         const { id } = req.params;
         const { deliveries, amount } = req.body;
-        const delivery = await Delivery.findByIdAndUpdate({_id: id}, {
+        const delivery = await Marsool.findByIdAndUpdate({_id: id}, {
             deliveries,
             amount
         });
@@ -77,7 +77,7 @@ const getMonthly = async (req, res) => {
         console.log("Start Date:", startDate);
         console.log("End Date:", endDate);
 
-        const expense = await Delivery.aggregate([
+        const expense = await Marsool.aggregate([
             {
                 $match: {
                     createdAt: {
@@ -117,7 +117,7 @@ const getDaily = async (req, res) => {
         const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
-        const expense = await Delivery.find({
+        const expense = await Marsool.find({
             createdAt: { $gte: startOfDay, $lte: endOfDay }
         });
 
