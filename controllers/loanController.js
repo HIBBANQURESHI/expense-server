@@ -22,9 +22,9 @@ const getLoan = async (req, res) => {
 
 // Create Loan
 const createLoan = async (req, res) => {
-    const { description, amount, received, remaining } = req.body;
+    const { name, amount, received, remaining } = req.body;
     try {
-        const loan = await Loan.create({description, amount, received, remaining})
+        const loan = await Loan.create({name, amount, received, remaining})
         res.status(200).json(loan)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,9 +51,9 @@ const deleteLoan = async (req, res) => {
 const updateLoan = async (req, res) => {
     try {
         const { id } = req.params;
-        const { description, amount, received, remaining } = req.body;
+        const { name, amount, received, remaining } = req.body;
         const loan = await Loan.findByIdAndUpdate({_id: id}, {
-            description,
+            name,
             amount, 
             received,
             remaining
@@ -64,4 +64,46 @@ const updateLoan = async (req, res) => {
     }
 };
 
-export {getLoans, getLoan, createLoan, deleteLoan, updateLoan}
+//getMonthlyLoan
+const getMonthlyLoan = async (req, res) => {
+    const { year, month } = req.params;
+
+    if (!year || !month || isNaN(year) || isNaN(month)) {
+        return res.status(400).json({ error: "Invalid year or month" });
+    }
+
+    try {
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+
+        const sales = await Loan.find({
+            createdAt: { $gte: startDate, $lte: endDate }
+        }).select("name createdAt amount received remaining");
+
+        res.status(200).json(sales);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+//getDailyLoan
+const getDailyLoan = async (req, res) => {
+    const { year, month, day } = req.params;
+
+    try {
+        const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
+        const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
+
+        const sales = await Loan.find({
+            createdAt: { $gte: startOfDay, $lte: endOfDay }
+        }).select("name createdAt amount received remaining");
+
+        res.status(200).json(sales);
+    } catch (error) {
+        console.error("Error in getDailyLoan:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+export {getLoans, getLoan, createLoan, deleteLoan, updateLoan, getMonthlyLoan, getDailyLoan}

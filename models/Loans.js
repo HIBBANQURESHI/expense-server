@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
 const loanSchema = new Schema({
-    description: {
+    name: {
         type: String,
         required: true
     },
@@ -12,7 +12,7 @@ const loanSchema = new Schema({
         required: true
     },
 
-    recevied: {
+    received: {
         type: Number,
         required: true
     },
