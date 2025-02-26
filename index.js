@@ -16,6 +16,7 @@ import noonRoutes from './routes/noonRoutes.js';
 import jahezRoutes from './routes/jahezRoutes.js';
 import marsoolRoutes from './routes/marsoolRoutes.js';
 import ninjaRoutes from './routes/NinjaRoutes.js';
+import receivingRoutes from './routes/receiving.js';
 
 
 dotenv.config();
@@ -41,6 +42,7 @@ app.use("/api/noon", noonRoutes);
 app.use("/api/jahez", jahezRoutes);
 app.use("/api/marsool", marsoolRoutes);
 app.use("/api/ninja", ninjaRoutes);
+app.use("/api/receiving", receivingRoutes);
 
 
 app.listen(process.env.PORT, () => {
