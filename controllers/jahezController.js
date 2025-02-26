@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import Jahez from '../models/jahez.js'
+import Jahez from '../models/Jahez.js'
 
 // Get all deliverys
 const getDeliveries = async (req, res) => {
