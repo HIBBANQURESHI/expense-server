@@ -25,7 +25,14 @@ connectToDatabase();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(
+    cors({
+      origin: ["https://expense-tracker-ivory-nine.vercel.app"], // Frontend origin
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+      allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+      credentials: true, // Allow cookies and credentials
+    })
+  );
 
 // Routes
 app.use("/api/sales", saleRoutes);
