@@ -1,127 +1,109 @@
 import mongoose from 'mongoose'
 import Brooze from '../models/Brooze.js';
 
-// Get all
-const getAll = async (req, res) => {
-    const expense = await Brooze.find({}).sort({createdAt: -1})
-    res.status(200).json(expense)
+// Get all Loan
+const getLoans = async (req, res) => {
+    const loan = await Brooze.find({}).sort({createdAt: -1})
+    res.status(200).json(loan)
 };
 
-// Get a single
-const get = async (req, res) => {
+// Get a single Loan
+const getLoan = async (req, res) => {
     const { id } = req.params;
     if(!mongoose.Types.ObjectId.isValid(id)){
-        return res.status(400).json({error: "No Expense Found"})
+        return res.status(400).json({error: "No Loan Found"})
     }
-    const expense = await Brooze.findById({_id: id})
-    if(!expense){
-        return res.status(400).json({error: "No Expense Found"})
+    const loan = await Brooze.findById({_id: id})
+    if(!loan){
+        return res.status(400).json({error: "No Loan Found"})
     }
-    res.status(200).json(expense)
+    res.status(200).json(loan)
 };
 
-// Create 
-const create = async (req, res) => {
-    const { description, amount } = req.body;
+// Create Loan
+const createLoan = async (req, res) => {
+    const { name, amount, credit, balance } = req.body;
     try {
-        const expense = await Brooze.create({description, amount})
-        res.status(200).json(expense)
+        const loan = await Brooze.create({name, amount, credit, balance})
+        res.status(200).json(loan)
     } catch (error) {
         res.status(400).json({error: error.message})        
     }
 };
 
-// Delete 
-const parnoid = async (req, res) => {
+// Delete Loan
+const deleteLoan = async (req, res) => {
     const { id } = req.params;
     
     if(!mongoose.Types.ObjectId.isValid(id)){
-        return res.status(400).json({error: "No Expense Found"})
+        return res.status(400).json({error: "No Loan Found"})
     }
 
-    const expense = await Brooze.findByIdAndDelete({_id: id})
-    if(!expense){
-        return res.status(400).json({error: "No Expense Found"})
+    const loan = await Brooze.findByIdAndDelete({_id: id})
+    if(!loan){
+        return res.status(400).json({error: "No Loan Found"})
     }
 
-    res.status(200).json(expense)
+    res.status(200).json(loan)
 };
 
-//Update
-const update = async (req, res) => {
+//Update Loan
+const updateLoan = async (req, res) => {
     try {
         const { id } = req.params;
-        const { description, amount } = req.body;
-        const expense = await Brooze.findByIdAndUpdate({_id: id}, {
-            description,
-            amount
+        const { name, amount, credit, balance } = req.body;
+        const loan = await Brooze.findByIdAndUpdate({_id: id}, {
+            name,
+            amount, 
+            credit,
+            balance
         });
-        return res.status(200).json(expense)        
+        return res.status(200).json(loan)        
     } catch (error) {
         return res.status(400).json({error: error.message})        
     }
 };
 
-//getMonthly
-const getMonthly = async (req, res) => {
+//getMonthlyLoan
+const getMonthlyLoan = async (req, res) => {
     const { year, month } = req.params;
 
-    // Validate year and month
     if (!year || !month || isNaN(year) || isNaN(month)) {
         return res.status(400).json({ error: "Invalid year or month" });
     }
 
     try {
-        const startDate = new Date(year, month - 1, 1); // First day of the month
-        const endDate = new Date(year, month, 0); // Last day of the month
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
 
-        const expense = await Brooze.aggregate([
-            {
-                $match: {
-                    createdAt: {
-                        $gte: startDate,
-                        $lte: endDate
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalSales: { $sum: 1 },
-                    totalAmount: { $sum: "$amount" }
-                }
-            }
-        ]);
+        const sales = await Brooze.find({
+            createdAt: { $gte: startDate, $lte: endDate }
+        }).select("name createdAt amount credit balance");
 
-        if (expense.length === 0) {
-            return res.status(200).json({ totalSales: 0, totalAmount: 0 });
-        }
-
-        res.status(200).json(expense[0]);
+        res.status(200).json(sales);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
 
-//getDaily
-const getDaily = async (req, res) => {
+//getDailyLoan
+const getDailyLoan = async (req, res) => {
     const { year, month, day } = req.params;
+
     try {
         const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
-        const expense = await Brooze.find({
+        const sales = await Brooze.find({
             createdAt: { $gte: startOfDay, $lte: endOfDay }
-        });
+        }).select("name createdAt amount credit balance");
 
-        const totalExpense = expense.length;
-        const totalAmount = expense.reduce((sum, expense) => sum + expense.amount, 0);
-
-        res.status(200).json({ totalExpense, totalAmount });
+        res.status(200).json(sales);
     } catch (error) {
-        console.error("Error in getDailySales:", error);
+        console.error("Error in getDailyLoan:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
-export {getAll, get, create, parnoid, update, getMonthly, getDaily}
+
+export {getLoans, getLoan, createLoan, deleteLoan, updateLoan, getMonthlyLoan, getDailyLoan}

@@ -1,14 +1,14 @@
 import express from "express";
-import {getAll, get, create, parnoid, update, getMonthly, getDaily} from "../controllers/broozeController.js";
+import {getLoans, getLoan, createLoan, deleteLoan, updateLoan, getMonthlyLoan, getDailyLoan} from "../controllers/broozeController.js";
 
 const router = express.Router();
 
-router.get("/", getAll);
-router.get("/:id", get);
-router.post("/", create);
-router.put("/:id", update);
-router.delete("/:id", parnoid);
-router.get("/:year/:month", getMonthly);
-router.get("/:year/:month/:day", getDaily);
+router.get("/", getLoans);
+router.get("/:id", getLoan);
+router.post("/", createLoan);
+router.delete("/:id", deleteLoan);
+router.put("/:id", updateLoan);
+router.get("/:year/:month", getMonthlyLoan);
+router.get("/:year/:month/:day", getDailyLoan);
 
 export default router;

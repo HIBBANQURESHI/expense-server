@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
 const broozeSchema = new Schema({
-    description: {
+    name: {
         type: String,
         required: true
     },
@@ -10,6 +10,17 @@ const broozeSchema = new Schema({
     amount: {
         type: Number,
         required: true
+    },
+
+    credit: {
+        type: Number,
+        required: true
+    },
+
+    balance: {
+        type: Number,
+        required: false,
+        default: 0
     }
 
   }, {timestamps: true});
