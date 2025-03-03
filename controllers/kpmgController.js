@@ -22,9 +22,9 @@ const getLoan = async (req, res) => {
 
 // Create Loan
 const createLoan = async (req, res) => {
-    const { name, amount, credit, balance } = req.body;
+    const { name, amount, credit, balance, date } = req.body;
     try {
-        const loan = await KPMG.create({name, amount, credit, balance})
+        const loan = await KPMG.create({name, amount, credit, balance, date})
         res.status(200).json(loan)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,12 +51,13 @@ const deleteLoan = async (req, res) => {
 const updateLoan = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, amount, credit, balance } = req.body;
+        const { name, amount, credit, balance, date } = req.body;
         const loan = await KPMG.findByIdAndUpdate({_id: id}, {
             name,
             amount, 
             credit,
-            balance
+            balance,
+            date
         });
         return res.status(200).json(loan)        
     } catch (error) {

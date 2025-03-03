@@ -15,9 +15,14 @@ const expenseSchema = new Schema({
     amount: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+  });
   
 const Expense = mongoose.model('Expense', expenseSchema);
 export default Expense

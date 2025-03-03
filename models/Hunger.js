@@ -10,9 +10,14 @@ const hungerSchema = new Schema({
     amount: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+  });
   
 const Hunger = mongoose.model('Hunger', hungerSchema);
 export default Hunger

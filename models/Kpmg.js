@@ -20,9 +20,14 @@ const kpmgSchema = new Schema({
     balance: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+ });
   
 const Kpmg = mongoose.model('Kpmg', kpmgSchema);
 export default Kpmg

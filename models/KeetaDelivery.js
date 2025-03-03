@@ -10,9 +10,14 @@ const keetaSchema = new Schema({
     amount: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+  });
   
 const Keeta = mongoose.model('Keeta', keetaSchema);
 export default Keeta

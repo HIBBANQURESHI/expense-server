@@ -22,9 +22,9 @@ const getExpense = async (req, res) => {
 
 // Create Expense
 const createExpense = async (req, res) => {
-    const { name, description, amount } = req.body;
+    const { name, description, amount, date } = req.body;
     try {
-        const expense = await Expense.create({name, description, amount})
+        const expense = await Expense.create({name, description, amount, date})
         res.status(200).json(expense)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,11 +51,12 @@ const deleteExpense = async (req, res) => {
 const updateExpense = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, amount } = req.body;
+        const { name, description, amount, date } = req.body;
         const expense = await Expense.findByIdAndUpdate({_id: id}, {
             name,
             description,
-            amount
+            amount,
+            date
         });
         return res.status(200).json(expense)        
     } catch (error) {

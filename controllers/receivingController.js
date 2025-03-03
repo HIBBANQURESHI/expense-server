@@ -22,9 +22,9 @@ const getLoan = async (req, res) => {
 
 // Create Loan
 const createLoan = async (req, res) => {
-    const { name, amount } = req.body;
+    const { name, amount, date } = req.body;
     try {
-        const loan = await Receiving.create({name, amount})
+        const loan = await Receiving.create({name, amount, date})
         res.status(200).json(loan)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,10 +51,11 @@ const deleteLoan = async (req, res) => {
 const updateLoan = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, amount } = req.body;
+        const { name, amount, date } = req.body;
         const loan = await Receiving.findByIdAndUpdate({_id: id}, {
             name,
-            amount 
+            amount,
+            date 
         });
         return res.status(200).json(loan)        
     } catch (error) {

@@ -22,9 +22,9 @@ const getParcel = async (req, res) => {
 
 // Create Parcel
 const createParcel = async (req, res) => {
-    const { description, amount, received, remaining } = req.body;
+    const { description, amount, received, remaining, date } = req.body;
     try {
-        const parcel = await Parcel.create({description, amount, received, remaining})
+        const parcel = await Parcel.create({description, amount, received, remaining, date})
         res.status(200).json(parcel)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,12 +51,13 @@ const deleteParcel = async (req, res) => {
 const updateParcel = async (req, res) => {
     try {
         const { id } = req.params;
-        const { description, amount, received, remaining } = req.body;
+        const { description, amount, received, remaining, date } = req.body;
         const parcel = await Parcel.findByIdAndUpdate({_id: id}, {
             description,
             amount, 
             received,
-            remaining
+            remaining,
+            date
         });
         return res.status(200).json(parcel)        
     } catch (error) {

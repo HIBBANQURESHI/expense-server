@@ -20,9 +20,14 @@ const loanSchema = new Schema({
     remaining: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+  });
   
 const Loan = mongoose.model('Loan', loanSchema);
 export default Loan

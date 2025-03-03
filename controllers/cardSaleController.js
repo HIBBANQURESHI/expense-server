@@ -22,9 +22,9 @@ const getSale = async (req, res) => {
 
 // Create Sale
 const createSale = async (req, res) => {
-    const { name, description, amount } = req.body;
+    const { name, description, amount, date } = req.body;
     try {
-        const sale = await Sale.create({name, description, amount})
+        const sale = await Sale.create({name, description, amount, date})
         res.status(200).json(sale)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,11 +51,12 @@ const deleteSale = async (req, res) => {
 const updateSale = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, amount } = req.body;
+        const { name, description, amount, date } = req.body;
         const sale = await Sale.findByIdAndUpdate({_id: id}, {
             name,
             description,
-            amount
+            amount,
+            date
         });
         return res.status(200).json(sale)        
     } catch (error) {

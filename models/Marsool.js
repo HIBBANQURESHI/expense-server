@@ -10,9 +10,14 @@ const marsoolSchema = new Schema({
     amount: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+  });
   
 const Marsool = mongoose.model('Marsool', marsoolSchema);
 export default Marsool

@@ -22,9 +22,9 @@ const getDelivery = async (req, res) => {
 
 // Create Delivery
 const createDelivery = async (req, res) => {
-    const { deliveries, amount } = req.body;
+    const { deliveries, amount, date } = req.body;
     try {
-        const delivery = await Hunger.create({deliveries, amount})
+        const delivery = await Hunger.create({deliveries, amount, date})
         res.status(200).json(delivery)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,10 +51,11 @@ const deleteDelivery = async (req, res) => {
 const updateDelivery = async (req, res) => {
     try {
         const { id } = req.params;
-        const { deliveries, amount } = req.body;
+        const { deliveries, amount, date } = req.body;
         const delivery = await Hunger.findByIdAndUpdate({_id: id}, {
             deliveries,
-            amount
+            amount,
+            date
         });
         return res.status(200).json(delivery)        
     } catch (error) {

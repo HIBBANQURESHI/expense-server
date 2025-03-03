@@ -21,9 +21,14 @@ const broozeSchema = new Schema({
         type: Number,
         required: false,
         default: 0
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+  });
   
 const Brooze = mongoose.model('Brooze', broozeSchema);
 export default Brooze

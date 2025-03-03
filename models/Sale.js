@@ -15,9 +15,14 @@ const saleSchema = new Schema({
     amount: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
 
-  }, {timestamps: true});
+  });
   
 const Sale = mongoose.model('Sale', saleSchema);
 export default Sale

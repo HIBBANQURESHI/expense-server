@@ -10,8 +10,13 @@ const receivingSchema = new Schema({
     amount: {
         type: Number,
         required: true
+    },
+
+    date: {
+        type: Date,
+        required: true // Ensures every document has a date
     }
-  }, {timestamps: true});
+  });
   
 const Receiving = mongoose.model('Receiving', receivingSchema);
 export default Receiving
