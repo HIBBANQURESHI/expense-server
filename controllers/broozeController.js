@@ -24,7 +24,7 @@ const getLoan = async (req, res) => {
 const createLoan = async (req, res) => {
     const { name, amount, credit, balance, date } = req.body;
     try {
-        const loan = await Brooze.create({name, amount, credit, balance, date})
+        const loan = await Brooze.create({name, amount, credit, balance, date: date ? new Date(date) : new Date()})
         res.status(200).json(loan)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -57,7 +57,7 @@ const updateLoan = async (req, res) => {
             amount, 
             credit,
             balance,
-            date
+            date: date ? new Date(date) : new Date()
         });
         return res.status(200).json(loan)        
     } catch (error) {
@@ -78,8 +78,8 @@ const getMonthlyLoan = async (req, res) => {
         const endDate = new Date(year, month, 0);
 
         const sales = await Brooze.find({
-            createdAt: { $gte: startDate, $lte: endDate }
-        }).select("name createdAt amount credit balance");
+            date: { $gte: startDate, $lte: endDate }
+        }).select("name date amount credit balance");
 
         res.status(200).json(sales);
     } catch (error) {
@@ -96,8 +96,8 @@ const getDailyLoan = async (req, res) => {
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
         const sales = await Brooze.find({
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
-        }).select("name createdAt amount credit balance");
+            date: { $gte: startOfDay, $lte: endOfDay }
+        }).select("name date amount credit balance");
 
         res.status(200).json(sales);
     } catch (error) {

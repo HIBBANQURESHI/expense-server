@@ -78,8 +78,8 @@ const getMonthlyLoan = async (req, res) => {
         const endDate = new Date(year, month, 0);
 
         const sales = await Loan.find({
-            createdAt: { $gte: startDate, $lte: endDate }
-        }).select("name createdAt amount received remaining");
+            date: { $gte: startDate, $lte: endDate }
+        }).select("name date amount received remaining");
 
         res.status(200).json(sales);
     } catch (error) {
@@ -96,8 +96,8 @@ const getDailyLoan = async (req, res) => {
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
         const sales = await Loan.find({
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
-        }).select("name createdAt amount received remaining");
+            date: { $gte: startOfDay, $lte: endOfDay }
+        }).select("name date amount received remaining");
 
         res.status(200).json(sales);
     } catch (error) {

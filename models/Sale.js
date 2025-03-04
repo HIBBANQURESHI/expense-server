@@ -19,7 +19,11 @@ const saleSchema = new Schema({
 
     date: {
         type: Date,
-        required: true // Ensures every document has a date
+        required: true,
+        default: Date.now,
+        get: function(date) {
+            return date.toISOString().split('T')[0]; // Store as YYYY-MM-DD
+        }
     }
 
   });

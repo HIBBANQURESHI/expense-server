@@ -80,7 +80,7 @@ const getMonthlyExpense = async (req, res) => {
         const expense = await Expense.aggregate([
             {
                 $match: {
-                    createdAt: {
+                    date: {
                         $gte: startDate,
                         $lte: endDate
                     }
@@ -113,7 +113,7 @@ const getDailyExpense = async (req, res) => {
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
         const expense = await Expense.find({
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            date: { $gte: startOfDay, $lte: endOfDay }
         });
 
         const totalExpense = expense.length;

@@ -80,7 +80,7 @@ const getMonthlySales = async (req, res) => {
         const sales = await Sale.aggregate([
             {
                 $match: {
-                    createdAt: {
+                    date: {
                         $gte: startDate,
                         $lte: endDate
                     }
@@ -113,7 +113,7 @@ const getDailySales = async (req, res) => {
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
         const sales = await Sale.find({
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            date: { $gte: startOfDay, $lte: endOfDay }
         });
 
         const totalSales = sales.length;

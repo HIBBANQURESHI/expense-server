@@ -24,7 +24,7 @@ const getLoan = async (req, res) => {
 const createLoan = async (req, res) => {
     const { name, amount, date } = req.body;
     try {
-        const loan = await Receiving.create({name, amount, date})
+        const loan = await Receiving.create({name, amount, date: date ? new Date(date) : new Date()})
         res.status(200).json(loan)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -55,7 +55,7 @@ const updateLoan = async (req, res) => {
         const loan = await Receiving.findByIdAndUpdate({_id: id}, {
             name,
             amount,
-            date 
+            date: date ? new Date(date) : new Date()
         });
         return res.status(200).json(loan)        
     } catch (error) {
@@ -76,8 +76,8 @@ const getMonthlyLoan = async (req, res) => {
         const endDate = new Date(year, month, 0);
 
         const sales = await Receiving.find({
-            createdAt: { $gte: startDate, $lte: endDate }
-        }).select("name createdAt amount");
+            date: { $gte: startDate, $lte: endDate }
+        }).select("name date amount");
 
         res.status(200).json(sales);
     } catch (error) {
@@ -90,12 +90,13 @@ const getDailyLoan = async (req, res) => {
     const { year, month, day } = req.params;
 
     try {
-        const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
-        const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
-
+        const startOfDay = new Date(year, month - 1, day);
+        const endOfDay = new Date(year, month - 1, day + 1);
+        
         const sales = await Receiving.find({
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
-        }).select("name createdAt amount");
+            date: { $gte: startOfDay, $lt: endOfDay }
+        }).select("name date amount");
+        
 
         res.status(200).json(sales);
     } catch (error) {

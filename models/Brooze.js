@@ -25,7 +25,8 @@ const broozeSchema = new Schema({
 
     date: {
         type: Date,
-        required: true // Ensures every document has a date
+        required: true,
+        default: Date.now
     }
 
   });

@@ -81,7 +81,7 @@ const getMonthly = async (req, res) => {
         const expense = await Marsool.aggregate([
             {
                 $match: {
-                    createdAt: {
+                    date: {
                         $gte: startDate,
                         $lt: endDate
                     }
@@ -119,7 +119,7 @@ const getDaily = async (req, res) => {
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
         const expense = await Marsool.find({
-            createdAt: { $gte: startOfDay, $lte: endOfDay }
+            date: { $gte: startOfDay, $lte: endOfDay }
         });
 
         console.log("Daily Deliveries Data:", expense);  // Debugging
