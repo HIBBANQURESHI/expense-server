@@ -22,9 +22,9 @@ const getExpense = async (req, res) => {
 
 // Create Expense
 const createExpense = async (req, res) => {
-    const { name, description, amount, date } = req.body;
+    const { name, description, amount, date, paymentMethod } = req.body;
     try {
-        const expense = await Expense.create({name, description, amount, date})
+        const expense = await Expense.create({name, description, amount, date, paymentMethod})
         res.status(200).json(expense)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,12 +51,13 @@ const deleteExpense = async (req, res) => {
 const updateExpense = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, amount, date } = req.body;
+        const { name, description, amount, date, paymentMethod } = req.body;
         const expense = await Expense.findByIdAndUpdate({_id: id}, {
             name,
             description,
             amount,
-            date
+            date,
+            paymentMethod
         });
         return res.status(200).json(expense)        
     } catch (error) {
@@ -68,60 +69,69 @@ const updateExpense = async (req, res) => {
 const getMonthlyExpense = async (req, res) => {
     const { year, month } = req.params;
 
-    // Validate year and month
-    if (!year || !month || isNaN(year) || isNaN(month)) {
-        return res.status(400).json({ error: "Invalid year or month" });
-    }
-
     try {
-        const startDate = new Date(year, month - 1, 1); // First day of the month
-        const endDate = new Date(year, month, 0); // Last day of the month
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
 
-        const expense = await Expense.aggregate([
+        const summary = await Expense.aggregate([
             {
                 $match: {
-                    date: {
-                        $gte: startDate,
-                        $lte: endDate
-                    }
+                    date: { $gte: startDate, $lte: endDate }
                 }
             },
             {
                 $group: {
-                    _id: null,
-                    totalSales: { $sum: 1 },
-                    totalAmount: { $sum: "$amount" }
+                    _id: "$paymentMethod",
+                    total: { $sum: "$amount" },
+                    count: { $sum: 1 }
                 }
             }
         ]);
 
-        if (expense.length === 0) {
-            return res.status(200).json({ totalSales: 0, totalAmount: 0 });
-        }
+        const result = {
+            cash: summary.find(item => item._id === 'cash')?.total || 0,
+            card: summary.find(item => item._id === 'card')?.total || 0,
+            total: summary.reduce((acc, curr) => acc + curr.total, 0)
+        };
 
-        res.status(200).json(expense[0]);
+        res.status(200).json(result);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 
 //getDailySales
 const getDailyExpense = async (req, res) => {
     const { year, month, day } = req.params;
+
     try {
-        const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
-        const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
+        const targetDate = new Date(year, month - 1, day);
+        const startDate = new Date(targetDate.setHours(0, 0, 0, 0));
+        const endDate = new Date(targetDate.setHours(23, 59, 59, 999));
 
-        const expense = await Expense.find({
-            date: { $gte: startOfDay, $lte: endOfDay }
-        });
+        const summary = await Expense.aggregate([
+            {
+                $match: {
+                    date: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: "$paymentMethod",
+                    total: { $sum: "$amount" },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
 
-        const totalExpense = expense.length;
-        const totalAmount = expense.reduce((sum, expense) => sum + expense.amount, 0);
+        const result = {
+            cash: summary.find(item => item._id === 'cash')?.total || 0,
+            card: summary.find(item => item._id === 'card')?.total || 0,
+            total: summary.reduce((acc, curr) => acc + curr.total, 0)
+        };
 
-        res.status(200).json({ totalExpense, totalAmount });
+        res.status(200).json(result);
     } catch (error) {
-        console.error("Error in getDailySales:", error);
         res.status(500).json({ error: error.message });
     }
 };

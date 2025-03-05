@@ -6,23 +6,25 @@ const expenseSchema = new Schema({
         type: String,
         required: true
     },
-
     description: {
         type: String,
         required: true
     },
-
     amount: {
         type: Number,
         required: true
     },
-
     date: {
         type: Date,
-        required: true // Ensures every document has a date
+        required: true
+    },
+    paymentMethod: {
+        type: String,
+        required: true,
+        enum: ['cash', 'card'],
+        default: 'cash'
     }
-
-  });
+});
   
 const Expense = mongoose.model('Expense', expenseSchema);
 export default Expense

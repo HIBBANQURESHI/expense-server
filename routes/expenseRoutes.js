@@ -8,7 +8,7 @@ router.get("/:id", getExpense);
 router.post("/", createExpense);
 router.put("/:id", updateExpense);
 router.delete("/:id", deleteExpense);
-router.get("/:year/:month", getMonthlyExpense);
-router.get("/:year/:month/:day", getDailyExpense);
+router.get("/monthly-summary/:year/:month", getMonthlyExpense);
+router.get("/daily-summary/:year/:month/:day", getDailyExpense);
 
 export default router;
