@@ -106,5 +106,31 @@ const getDailyLoan = async (req, res) => {
     }
 };
 
+const getLoanSummary = async (req, res) => {
+    try {
+      const summary = await Brooze.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: "$amount" },
+            totalCredit: { $sum: "$credit" },
+            totalBalance: { $sum: "$balance" },
+            totalLoans: { $sum: 1 }
+          }
+        }
+      ]);
+      
+      res.status(200).json(summary[0] || {
+        totalAmount: 0,
+        totalCredit: 0,
+        totalBalance: 0,
+        totalLoans: 0
+      });
+    } catch (error) {
+      console.error("Error in getLoanSummary:", error);
+      res.status(500).json({ error: "Failed to fetch loan summary" });
+    }
+};
 
-export {getLoans, getLoan, createLoan, deleteLoan, updateLoan, getMonthlyLoan, getDailyLoan}
+
+export {getLoans, getLoan, createLoan, deleteLoan, updateLoan, getMonthlyLoan, getDailyLoan, getLoanSummary}

@@ -22,9 +22,9 @@ const getSale = async (req, res) => {
 
 // Create Sale
 const createSale = async (req, res) => {
-    const { name, description, amount, date } = req.body;
+    const { name, description, amount, date, paymentMethod } = req.body;
     try {
-        const sale = await Sale.create({name, description, amount, date})
+        const sale = await Sale.create({name, description, amount, date, paymentMethod})
         res.status(200).json(sale)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,12 +51,13 @@ const deleteSale = async (req, res) => {
 const updateSale = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, amount, date } = req.body;
+        const { name, description, amount, date, paymentMethod } = req.body;
         const sale = await Sale.findByIdAndUpdate({_id: id}, {
             name,
             description,
             amount,
-            date
+            date,
+            paymentMethod
         });
         return res.status(200).json(sale)        
     } catch (error) {
@@ -67,39 +68,55 @@ const updateSale = async (req, res) => {
 //getMonthlySales
 const getMonthlySales = async (req, res) => {
     const { year, month } = req.params;
-
-    // Validate year and month
-    if (!year || !month || isNaN(year) || isNaN(month)) {
-        return res.status(400).json({ error: "Invalid year or month" });
-    }
-
     try {
-        const startDate = new Date(year, month - 1, 1); // First day of the month
-        const endDate = new Date(year, month, 0); // Last day of the month
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
 
-        const sales = await Sale.aggregate([
+        const salesData = await Sale.aggregate([
             {
                 $match: {
-                    date: {
-                        $gte: startDate,
-                        $lte: endDate
-                    }
+                    date: { $gte: startDate, $lte: endDate }
                 }
             },
             {
                 $group: {
                     _id: null,
                     totalSales: { $sum: 1 },
-                    totalAmount: { $sum: "$amount" }
+                    totalAmount: { $sum: "$amount" },
+                    cashSales: {
+                        $sum: {
+                            $cond: [{ $eq: ["$paymentMethod", "cash"] }, 1, 0]
+                        }
+                    },
+                    cardSales: {
+                        $sum: {
+                            $cond: [{ $eq: ["$paymentMethod", "card"] }, 1, 0]
+                        }
+                    },
+                    cashAmount: {
+                        $sum: {
+                            $cond: [{ $eq: ["$paymentMethod", "cash"] }, "$amount", 0]
+                        }
+                    },
+                    cardAmount: {
+                        $sum: {
+                            $cond: [{ $eq: ["$paymentMethod", "card"] }, "$amount", 0]
+                        }
+                    }
                 }
             }
         ]);
 
-        if (sales.length === 0) {
-            return res.status(200).json({ totalSales: 0, totalAmount: 0 });
-        }
+        const result = salesData.length > 0 ? salesData[0] : { 
+            totalSales: 0,
+            totalAmount: 0,
+            cashSales: 0,
+            cardSales: 0,
+            cashAmount: 0,
+            cardAmount: 0
+        };
 
-        res.status(200).json(sales[0]);
+        res.status(200).json(result);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -126,4 +143,29 @@ const getDailySales = async (req, res) => {
     }
 };
 
-export {getSales, getSale, createSale, deleteSale, updateSale, getMonthlySales, getDailySales}
+const getTotalRevenue = async (req, res) => {
+    try {
+        const result = await Sale.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalAmount: { $sum: "$amount" },
+                    totalSales: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Return proper structure even when no sales exist
+        res.status(200).json({
+            totalAmount: result[0]?.totalAmount || 0,
+            totalSales: result[0]?.totalSales || 0
+        });
+        
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+
+
+export {getSales, getSale, createSale, deleteSale, updateSale, getMonthlySales, getDailySales, getTotalRevenue}

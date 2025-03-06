@@ -24,6 +24,13 @@ const saleSchema = new Schema({
         get: function(date) {
             return date.toISOString().split('T')[0]; // Store as YYYY-MM-DD
         }
+    },
+
+    paymentMethod: {
+        type: String,
+        enum: ['cash', 'card'],
+        required: true,
+        default: 'cash'
     }
 
   });

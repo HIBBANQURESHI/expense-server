@@ -68,7 +68,6 @@ const updateExpense = async (req, res) => {
 //getMonthlySales
 const getMonthlyExpense = async (req, res) => {
     const { year, month } = req.params;
-
     try {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0);
@@ -135,5 +134,7 @@ const getDailyExpense = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
 
 export {getExpenses, getExpense, createExpense, deleteExpense, updateExpense, getMonthlyExpense, getDailyExpense}
