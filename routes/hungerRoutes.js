@@ -1,8 +1,19 @@
 import express from "express";
-import {getDeliveries, getDelivery, createDelivery, deleteDelivery, updateDelivery, getMonthly, getDaily} from "../controllers/hungerController.js";
+import {
+    getDeliveries,
+    getDelivery,
+    createDelivery,
+    deleteDelivery,
+    updateDelivery,
+    getMonthly,
+    getDaily,
+    getDeliverySummary
+} from "../controllers/hungerController.js";
 
 const router = express.Router();
 
+// Add summary route first
+router.get("/summary/total", getDeliverySummary);
 router.get("/", getDeliveries);
 router.get("/:id", getDelivery);
 router.post("/", createDelivery);

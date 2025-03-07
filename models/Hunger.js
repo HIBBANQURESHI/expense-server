@@ -2,21 +2,14 @@ import mongoose from "mongoose";
 import { Schema } from "mongoose";
 
 const hungerSchema = new Schema({
-    deliveries: {
-        type: Number,
-        required: true
+    deliveries: { type: Number, required: true },
+    amount: { type: Number, required: true },
+    paidAmount: { type: Number, default: 0 },
+    balance: { 
+        type: Number, 
+        default: function() { return this.amount - this.paidAmount }
     },
-
-    amount: {
-        type: Number,
-        required: true
-    },
-
-    date: {
-        type: Date,
-        required: true // Ensures every document has a date
-    }
-
+    date: { type: Date, required: true }
   });
   
 const Hunger = mongoose.model('Hunger', hungerSchema);

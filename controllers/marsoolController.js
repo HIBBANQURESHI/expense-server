@@ -22,12 +22,19 @@ const getDelivery = async (req, res) => {
 
 // Create Delivery
 const createDelivery = async (req, res) => {
-    const { deliveries, amount, date } = req.body;
+    const { deliveries, amount, paidAmount, date } = req.body;
     try {
-        const delivery = await Marsool.create({deliveries, amount, date})
-        res.status(200).json(delivery)
+        const balance = amount - (paidAmount || 0);
+        const delivery = await Marsool.create({ 
+            deliveries, 
+            amount, 
+            paidAmount: paidAmount || 0,
+            balance,
+            date 
+        });
+        res.status(200).json(delivery);
     } catch (error) {
-        res.status(400).json({error: error.message})        
+        res.status(400).json({ error: error.message });
     }
 };
 
@@ -51,16 +58,47 @@ const deleteDelivery = async (req, res) => {
 const updateDelivery = async (req, res) => {
     try {
         const { id } = req.params;
-        const { deliveries, amount, date } = req.body;
-        const delivery = await Marsool.findByIdAndUpdate({_id: id}, {
+        const { deliveries, amount, paidAmount, date } = req.body;
+        const balance = amount - (paidAmount || 0);
+        
+        const delivery = await Marsool.findByIdAndUpdate(id, {
             deliveries,
             amount,
+            paidAmount: paidAmount || 0,
+            balance,
             date
-        });
-        return res.status(200).json(delivery)        
+        }, { new: true });
+        
+        res.status(200).json(delivery);
     } catch (error) {
-        return res.status(400).json({error: error.message})        
+        res.status(400).json({ error: error.message });
     }
+};
+
+// Get Summary
+const getDeliverySummary = async (req, res) => {
+    try {
+        const result = await Marsool.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalDeliveries: { $sum: "$deliveries" },
+              totalAmount: { $sum: "$amount" },
+              totalPaid: { $sum: "$paidAmount" },
+              totalBalance: { $sum: "$balance" }
+            }
+          }
+        ]);
+        
+        res.status(200).json(result[0] || {
+          totalDeliveries: 0,
+          totalAmount: 0,
+          totalPaid: 0,
+          totalBalance: 0
+        });
+      } catch (error) {
+        res.status(500).json({ error: "Could not calculate totals" });
+      }
 };
 
 const getMonthly = async (req, res) => {
@@ -135,4 +173,4 @@ const getDaily = async (req, res) => {
 };
 
 
-export {getDeliveries, getDelivery, createDelivery, deleteDelivery, updateDelivery, getMonthly, getDaily}
+export {getDeliveries, getDelivery, createDelivery, deleteDelivery, updateDelivery, getMonthly, getDaily, getDeliverySummary}
