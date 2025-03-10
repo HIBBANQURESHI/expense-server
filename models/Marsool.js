@@ -13,4 +13,4 @@ const marsoolSchema = new Schema({
   });
   
 const Marsool = mongoose.model('Marsool', marsoolSchema);
-export default Marsool
+export default Marsool            

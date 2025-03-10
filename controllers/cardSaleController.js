@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import Sale from '../models/Sale.js'
 import CardSale from '../models/CardSale.js'
 
 // Get all sales
@@ -25,7 +24,7 @@ const getSale = async (req, res) => {
 const createSale = async (req, res) => {
     const { name, description, amount, date } = req.body;
     try {
-        const sale = await Sale.create({name, description, amount, date})
+        const sale = await CardSale.create({name, description, amount, date})
         res.status(200).json(sale)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -40,7 +39,7 @@ const deleteSale = async (req, res) => {
         return res.status(400).json({error: "No Sale Found"})
     }
 
-    const sale = await Sale.findByIdAndDelete({_id: id})
+    const sale = await CardSale.findByIdAndDelete({_id: id})
     if(!sale){
         return res.status(400).json({error: "No Sale Found"})
     }
@@ -53,7 +52,7 @@ const updateSale = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, amount, date } = req.body;
-        const sale = await Sale.findByIdAndUpdate({_id: id}, {
+        const sale = await CardSale.findByIdAndUpdate({_id: id}, {
             name,
             description,
             amount,
@@ -78,7 +77,7 @@ const getMonthlySales = async (req, res) => {
         const startDate = new Date(year, month - 1, 1); // First day of the month
         const endDate = new Date(year, month, 0); // Last day of the month
 
-        const sales = await Sale.aggregate([
+        const sales = await CardSale.aggregate([
             {
                 $match: {
                     date: {
@@ -113,7 +112,7 @@ const getDailySales = async (req, res) => {
         const startOfDay = new Date(year, month - 1, day, 0, 0, 0);
         const endOfDay = new Date(year, month - 1, day, 23, 59, 59);
 
-        const sales = await Sale.find({
+        const sales = await CardSale.find({
             date: { $gte: startOfDay, $lte: endOfDay }
         });
 

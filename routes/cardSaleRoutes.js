@@ -4,6 +4,7 @@ import {getSales, getSale, createSale, deleteSale, updateSale, getMonthlySales, 
 const router = express.Router();
 
 router.get("/", getSales);
+
 router.get("/:id", getSale);
 router.post("/", createSale);
 router.put("/:id", updateSale);
