@@ -1,9 +1,10 @@
 import mongoose from 'mongoose'
-import Sale from '../models/CardSale.js'
+import Sale from '../models/Sale.js'
+import CardSale from '../models/CardSale.js'
 
 // Get all sales
 const getSales = async (req, res) => {
-    const sale = await Sale.find({}).sort({createdAt: -1})
+    const sale = await CardSale.find({}).sort({createdAt: -1})
     res.status(200).json(sale)
 };
 
@@ -13,7 +14,7 @@ const getSale = async (req, res) => {
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(400).json({error: "No Sale Found"})
     }
-    const sale = await Sale.findById({_id: id})
+    const sale = await CardSale.findById({_id: id})
     if(!sale){
         return res.status(400).json({error: "No Sale Found"})
     }

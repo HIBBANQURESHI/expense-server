@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
-import Sale from '../models/CardSale.js'
-
+import Sale from '../models/Sale.js'
 
 // Get all sales
 const getSales = async (req, res) => {
