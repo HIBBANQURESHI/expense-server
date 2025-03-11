@@ -10,38 +10,41 @@ const getSales = async (req, res) => {
 // Get a single sale
 const getSale = async (req, res) => {
     try {
-        const { id } = req.params;
-        const decodedId = decodeURIComponent(id);
-        
-        if (!mongoose.Types.ObjectId.isValid(decodedId)) {
-            return res.status(400).json({
-                success: false,
-                error: "Invalid ID format"
-            });
-        }
-
-        const sale = await Sale.findById(decodedId);
-        if (!sale) {
-            return res.status(404).json({
-                success: false,
-                error: "Sale not found"
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: {
-                ...sale._doc,
-                date: sale.date.toISOString()
-            }
+      const rawId = decodeURIComponent(req.params.id);
+      
+      // Add cache control headers
+      res.setHeader('Cache-Control', 'no-store, max-age=0');
+      
+      if (!mongoose.Types.ObjectId.isValid(rawId)) {
+        return res.status(400).json({
+          error: "Invalid ID format",
+          receivedId: req.params.id
         });
+      }
+  
+      const sale = await Sale.findById(rawId);
+      
+      if (!sale) {
+        return res.status(404).json({
+          error: "Sale not found"
+        });
+      }
+  
+      // Add ETag for cache validation
+      const etag = crypto.createHash('md5').update(JSON.stringify(sale)).digest('hex');
+      res.setHeader('ETag', etag);
+  
+      res.status(200).json({
+        ...sale._doc,
+        date: sale.date.toISOString()
+      });
+      
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: "Server error"
-        });
+      res.status(500).json({
+        error: "Server error"
+      });
     }
-};
+  };
 
 // Create Sale
 const createSale = async (req, res) => {
