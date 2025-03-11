@@ -9,15 +9,38 @@ const getSales = async (req, res) => {
 
 // Get a single sale
 const getSale = async (req, res) => {
-    const { id } = req.params;
-    if(!mongoose.Types.ObjectId.isValid(id)){
-        return res.status(400).json({error: "No Sale Found"})
+    try {
+        const { id } = req.params;
+        const decodedId = decodeURIComponent(id);
+        
+        if (!mongoose.Types.ObjectId.isValid(decodedId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid ID format"
+            });
+        }
+
+        const sale = await Sale.findById(decodedId);
+        if (!sale) {
+            return res.status(404).json({
+                success: false,
+                error: "Sale not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...sale._doc,
+                date: sale.date.toISOString()
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: "Server error"
+        });
     }
-    const sale = await Sale.findById({_id: id})
-    if(!sale){
-        return res.status(400).json({error: "No Sale Found"})
-    }
-    res.status(200).json(sale)
 };
 
 // Create Sale
@@ -51,17 +74,37 @@ const deleteSale = async (req, res) => {
 const updateSale = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, description, amount, date, paymentMethod } = req.body;
-        const sale = await Sale.findByIdAndUpdate({_id: id}, {
-            name,
-            description,
-            amount,
-            date,
-            paymentMethod
+        const decodedId = decodeURIComponent(id);
+
+        if (!mongoose.Types.ObjectId.isValid(decodedId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid ID format"
+            });
+        }
+
+        const updatedSale = await Sale.findByIdAndUpdate(
+            decodedId,
+            req.body,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedSale) {
+            return res.status(404).json({
+                success: false,
+                error: "Sale not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: updatedSale
         });
-        return res.status(200).json(sale)        
     } catch (error) {
-        return res.status(400).json({error: error.message})        
+        res.status(400).json({
+            success: false,
+            error: error.message
+        });
     }
 };
 
