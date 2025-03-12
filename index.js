@@ -17,6 +17,8 @@ import jahezRoutes from './routes/jahezRoutes.js';
 import marsoolRoutes from './routes/marsoolRoutes.js';
 import ninjaRoutes from './routes/NinjaRoutes.js';
 import receivingRoutes from './routes/receiving.js';
+import balanceSheetRoutes from "./routes/balanceSheet.js";
+
 
 
 dotenv.config();
@@ -27,7 +29,7 @@ const app = express();
 app.use(express.json());
 app.use(
     cors({
-      origin: ["https://expense-tracker-ivory-nine.vercel.app"], // Frontend origin
+      origin: ["https://expense-tracker-ivory-nine.vercel.app", "http://localhost:3000"], // Frontend origin
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
       allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
       credentials: true, // Allow cookies and credentials
@@ -50,6 +52,8 @@ app.use("/api/jahez", jahezRoutes);
 app.use("/api/marsool", marsoolRoutes);
 app.use("/api/ninja", ninjaRoutes);
 app.use("/api/receiving", receivingRoutes);
+app.use("/api/balance", balanceSheetRoutes);
+
 
 
 app.listen(process.env.PORT, () => {

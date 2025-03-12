@@ -20,10 +20,7 @@ const saleSchema = new Schema({
     date: {
         type: Date,
         required: true,
-        default: Date.now,
-        get: function(date) {
-            return date.toISOString().split('T')[0]; // Store as YYYY-MM-DD
-        }
+        default: Date.now
     },
 
     paymentMethod: {

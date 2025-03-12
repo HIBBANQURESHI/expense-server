@@ -22,9 +22,9 @@ const getLoan = async (req, res) => {
 
 // Create Loan
 const createLoan = async (req, res) => {
-    const { name, amount, date } = req.body;
+    const { name, description, amount, date } = req.body;
     try {
-        const loan = await Receiving.create({name, amount, date: date ? new Date(date) : new Date()})
+        const loan = await Receiving.create({name, description, amount, date: date ? new Date(date) : new Date()})
         res.status(200).json(loan)
     } catch (error) {
         res.status(400).json({error: error.message})        
@@ -51,9 +51,10 @@ const deleteLoan = async (req, res) => {
 const updateLoan = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, amount, date } = req.body;
+        const { name, description, amount, date } = req.body;
         const loan = await Receiving.findByIdAndUpdate({_id: id}, {
             name,
+            description,
             amount,
             date: date ? new Date(date) : new Date()
         });
@@ -77,7 +78,7 @@ const getMonthlyLoan = async (req, res) => {
 
         const sales = await Receiving.find({
             date: { $gte: startDate, $lte: endDate }
-        }).select("name date amount");
+        }).select("name description date amount");
 
         res.status(200).json(sales);
     } catch (error) {
@@ -95,7 +96,7 @@ const getDailyLoan = async (req, res) => {
         
         const sales = await Receiving.find({
             date: { $gte: startOfDay, $lt: endOfDay }
-        }).select("name date amount");
+        }).select("name description date amount");
         
 
         res.status(200).json(sales);

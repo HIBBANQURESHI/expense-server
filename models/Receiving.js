@@ -7,6 +7,11 @@ const receivingSchema = new Schema({
         required: true
     },
 
+    description: {
+        type: String,
+        required: true
+    },
+
     amount: {
         type: Number,
         required: true
