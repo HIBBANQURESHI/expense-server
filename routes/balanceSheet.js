@@ -6,33 +6,49 @@ import Loans from '../models/Loans.js';
 import Receiving from '../models/Receiving.js';
 import Sale from '../models/Sale.js';
 import KeetaDelivery from '../models/KeetaDelivery.js';
-import HungerDelivery from '../models/HungerDelivery.js';
-import NoonDelivery from '../models/NoonDelivery.js';
-import JahezDelivery from '../models/JahezDelivery.js';
-import MarsoolDelivery from '../models/MarsoolDelivery.js';
-import NinjaDelivery from '../models/NinjaDelivery.js';
+import Hunger from '../models/Hunger.js';
+import Noon from '../models/Noon.js';
+import Jahez from '../models/Jahez.js';
+import Marsool from '../models/Marsool.js';
+import Ninja from '../models/Ninja.js';
+import Brooze from '../models/Brooze.js';
+import Kpmg from '../models/Kpmg.js';
 
 const router = express.Router();
 
-const getDeliveryDeductions = async (startOfDay, endOfDay) => {
+const getDeductions = async (startOfDay, endOfDay) => {
   try {
-    const deliveries = await Promise.all([
-      KeetaDelivery.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
-      HungerDelivery.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
-      NoonDelivery.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
-      JahezDelivery.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
-      MarsoolDelivery.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
-      NinjaDelivery.find({ date: { $gte: startOfDay, $lte: endOfDay } })
+    const [deliveries, companies] = await Promise.all([
+      // Delivery Services
+      Promise.all([
+        KeetaDelivery.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+        Hunger.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+        Noon.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+        Jahez.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+        Marsool.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+        Ninja.find({ date: { $gte: startOfDay, $lte: endOfDay } })
+      ]),
+      // Company Deductions
+      Promise.all([
+        Brooze.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+        Kpmg.find({ date: { $gte: startOfDay, $lte: endOfDay } })
+      ])
     ]);
 
-    return deliveries.reduce((acc, curr, index) => {
-      const services = ['Keeta', 'Hunger', 'Noon', 'Jahez', 'Marsool', 'Ninja'];
-      acc[services[index]] = curr.reduce((sum, item) => sum + (item.amount || 0), 0);
-      return acc;
-    }, {});
+    return {
+      deliveries: deliveries.reduce((acc, curr, index) => {
+        const services = ['Keeta', 'Hunger', 'Noon', 'Jahez', 'Marsool', 'Ninja'];
+        acc[services[index]] = curr.reduce((sum, item) => sum + (item.amount || 0), 0);
+        return acc;
+      }, {}),
+      companies: {
+        Brooze: companies[0].reduce((sum, item) => sum + (item.amount || 0), 0),
+        Kpmg: companies[1].reduce((sum, item) => sum + (item.amount || 0), 0)
+      }
+    };
   } catch (error) {
-    console.error('Error fetching deliveries:', error);
-    return {};
+    console.error('Error fetching deductions:', error);
+    return { deliveries: {}, companies: {} };
   }
 };
 
@@ -44,62 +60,80 @@ router.get('/', async (req, res) => {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    // Get previous balance
-    const prevOpening = await OpeningBalance.findOne({
-      date: { $lt: startOfDay }
-    }).sort({ date: -1 });
+    // Get opening balance (manual entry or previous day's closing)
+    const openingEntry = await OpeningBalance.findOne({
+      date: { $gte: startOfDay, $lte: endOfDay }
+    });
+
+    let openingBalance = openingEntry?.amount || 0;
+
+    // If no manual entry, get previous day's closing
+    if (!openingEntry) {
+      const prevDay = await OpeningBalance.findOne({
+        date: { $lt: startOfDay }
+      }).sort({ date: -1 });
+      openingBalance = prevDay?.amount || 0;
+    }
 
     // Get transactions
-    // Fix the Loans and Receiving queries by removing trailing commas
-const [cashSales, cashExpenses, loans, receivings, deliveryDeductions] = await Promise.all([
-    Sale.aggregate([
-      { 
-        $match: { 
-          paymentMethod: 'cash',
-          date: { $gte: startOfDay, $lte: endOfDay }
+    const [
+      cashSales, 
+      cashExpenses, 
+      loans, 
+      receivings, 
+      deductions
+    ] = await Promise.all([
+      Sale.aggregate([
+        { 
+          $match: { 
+            paymentMethod: 'cash',
+            date: { $gte: startOfDay, $lte: endOfDay }
+          }
+        },
+        { 
+          $group: { 
+            _id: null, 
+            total: { $sum: "$amount" } 
+          } 
         }
-      },
-      { 
-        $group: { 
-          _id: null, 
-          total: { $sum: "$amount" } 
+      ]),
+      Expense.aggregate([
+        { 
+          $match: { 
+            paymentMethod: 'cash',
+            date: { $gte: startOfDay, $lte: endOfDay }
+          }
+        },
+        { 
+          $group: { 
+            _id: null, 
+            total: { $sum: "$amount" } 
+          } 
         } 
-      }
-    ]),
-    Expense.aggregate([
-      { 
-        $match: { 
-          paymentMethod: 'cash',
-          date: { $gte: startOfDay, $lte: endOfDay }
-        }
-      },
-      { 
-        $group: { 
-          _id: null, 
-          total: { $sum: "$amount" } 
-        } 
-      }
-    ]),
-    Loans.find({ date: { $gte: startOfDay, $lte: endOfDay } }),  // Fixed
-    Receiving.find({ date: { $gte: startOfDay, $lte: endOfDay } }),  // Fixed
-    getDeliveryDeductions(startOfDay, endOfDay)
-  ]);
+      ]),
+      Loans.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+      Receiving.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
+      getDeductions(startOfDay, endOfDay)  // Ensure this returns a Promise
+    ]);
+    
 
     // Calculate totals
     const totalInflows = cashSales[0]?.total || 0;
     const totalExpenses = cashExpenses[0]?.total || 0;
     const totalLoans = loans.reduce((sum, loan) => sum + (loan.remaining || 0), 0);
     const totalReceivings = receivings.reduce((sum, r) => sum + (r.amount || 0), 0);
-    const totalDeliveries = Object.values(deliveryDeductions).reduce((a, b) => a + b, 0);
+    const totalDeliveries = Object.values(deductions.deliveries).reduce((a, b) => a + b, 0);
+    const totalCompanies = Object.values(deductions.companies).reduce((a, b) => a + b, 0);
 
-    const currentBalance = (prevOpening?.amount || 0) + 
+    const currentBalance = openingBalance + 
                          totalInflows - 
                          totalExpenses - 
                          totalLoans - 
                          totalReceivings - 
-                         totalDeliveries;
+                         totalDeliveries -
+                         totalCompanies;
 
-    // Save next day's opening
+    // Save next day's opening (auto-generated if not exists)
     if (!await OpeningBalance.findOne({ date: endOfDay })) {
       await OpeningBalance.create({
         amount: currentBalance,
@@ -109,24 +143,24 @@ const [cashSales, cashExpenses, loans, receivings, deliveryDeductions] = await P
     }
 
     res.json({
-      openingBalance: prevOpening?.amount || 0,
+      openingBalance,
       inflows: totalInflows,
       expenses: totalExpenses,
       loans: totalLoans,
       receivings: totalReceivings,
-      deliveries: deliveryDeductions,
+      deliveries: deductions.deliveries,
+      companies: deductions.companies,
       currentBalance,
+      nextDayOpening: currentBalance, // Tomorrow's opening
       lastUpdated: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('Error in balance route:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch balance data',
-      details: error.message 
-    });
+    res.status(500).json({ error: error.message });
   }
 });
+
+// Keep existing PATCH endpoint and modelMap
 
 // Generic update endpoint
 router.patch('/:model/:id', async (req, res) => {
