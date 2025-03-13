@@ -7,10 +7,11 @@ const openingBalanceSchema = new mongoose.Schema({
   },
   date: {
     type: Date,
-    default: Date.now
+    required: true,
+    index: true
   },
   description: String
-});
+}, { timestamps: true });
 
 const OpeningBalance = mongoose.model('OpeningBalance', openingBalanceSchema);
 export default OpeningBalance;

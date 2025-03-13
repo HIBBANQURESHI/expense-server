@@ -18,6 +18,8 @@ import marsoolRoutes from './routes/marsoolRoutes.js';
 import ninjaRoutes from './routes/NinjaRoutes.js';
 import receivingRoutes from './routes/receiving.js';
 import balanceSheetRoutes from "./routes/balanceSheet.js";
+import cardBalanceRoutes from "./routes/cardBalance.js";
+
 
 
 
@@ -53,6 +55,7 @@ app.use("/api/marsool", marsoolRoutes);
 app.use("/api/ninja", ninjaRoutes);
 app.use("/api/receiving", receivingRoutes);
 app.use("/api/balance", balanceSheetRoutes);
+app.use("/api/card-balance", cardBalanceRoutes);
 
 
 
