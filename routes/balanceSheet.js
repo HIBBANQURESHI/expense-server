@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const openingEntry = await OpeningBalance.findOne({ date: { $gte: startOfDay, $lte: endOfDay } });
+    const openingEntry = await OpeningBalance.findOne({ date: startOfDay });
     let openingBalance = openingEntry?.amount || 0;
 
     if (!openingEntry) {
@@ -78,10 +78,15 @@ router.get('/', async (req, res) => {
 
     const currentBalance = openingBalance + totalInflows - totalExpenses - totalLoans - totalReceivings - totalDeliveries - totalCompanies;
 
-    const nextDay = new Date(startOfDay);
-    nextDay.setDate(nextDay.getDate() + 1);
-    if (!await OpeningBalance.findOne({ date: { $gte: nextDay, $lte: nextDay } })) {
-      await OpeningBalance.create({ amount: currentBalance, date: nextDay });
+    const nextDayStart = new Date(startOfDay);
+    nextDayStart.setDate(startOfDay.getDate() + 1);
+    nextDayStart.setHours(0, 0, 0, 0); // Normalize
+    
+    if (!await OpeningBalance.findOne({ date: nextDayStart })) {
+      await OpeningBalance.create({ 
+        amount: currentBalance, 
+        date: nextDayStart 
+      });
     }
 
     res.json({
@@ -103,12 +108,23 @@ router.get('/', async (req, res) => {
 
 router.post('/opening', async (req, res) => {
   try {
-    const newBalance = new OpeningBalance({
-      amount: req.body.amount,
-      date: req.body.date,
-      description: 'Manual entry'
-    });
-    const savedBalance = await newBalance.save();
+    const date = new Date(req.body.date);
+    date.setHours(0, 0, 0, 0); // Normalize to start of day
+
+    const savedBalance = await OpeningBalance.findOneAndUpdate(
+      { date: date },
+      { 
+        amount: req.body.amount,
+        date: date,
+        description: 'Manual entry'
+      },
+      { 
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true 
+      }
+    );
+
     res.status(201).json(savedBalance);
   } catch (error) {
     res.status(400).json({ error: error.message });
