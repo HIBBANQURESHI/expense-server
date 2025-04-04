@@ -47,28 +47,71 @@ const getDeductions = async (startOfDay, endOfDay) => {
 
 router.get('/', async (req, res) => {
   try {
-    const date = req.query.date ? new Date(req.query.date) : new Date();
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    const dateParam = req.query.date;
+    let date;
 
-    const openingEntry = await OpeningBalance.findOne({ date: startOfDay });
-    let openingBalance = openingEntry?.amount || 0;
-
-    if (!openingEntry) {
-      const prevDay = await OpeningBalance.findOne({ date: { $lt: startOfDay } }).sort({ date: -1 });
-      openingBalance = prevDay?.amount || 0;
+    // Parse date parameter
+    if (dateParam) {
+      date = new Date(dateParam + 'T00:00:00Z'); // UTC midnight
+      if (isNaN(date)) return res.status(400).json({ error: 'Invalid date format' });
+    } else {
+      date = new Date();
+      date.setUTCHours(0, 0, 0, 0); // Today's UTC midnight
     }
 
-    const [cashSales, cashExpenses, loans, receivings, deductions] = await Promise.all([
-      Sale.aggregate([{ $match: { paymentMethod: 'cash', date: { $gte: startOfDay, $lte: endOfDay } } }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
-      Expense.aggregate([{ $match: { paymentMethod: 'cash', date: { $gte: startOfDay, $lte: endOfDay } } }, { $group: { _id: null, total: { $sum: "$amount" } } }]),
+    // Set date boundaries
+    const startOfDay = new Date(date);
+    const endOfDay = new Date(date);
+    endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
+    endOfDay.setUTCMilliseconds(-1); // 23:59:59.999
+
+    // Get opening balance
+    let openingBalance = 0;
+    const openingEntry = await OpeningBalance.findOne({ 
+      date: { $gte: startOfDay, $lte: endOfDay }
+    });
+
+    if (openingEntry) {
+      openingBalance = openingEntry.amount;
+    } else {
+      const prevDayEntry = await OpeningBalance.findOne({ 
+        date: { $lt: startOfDay } 
+      }).sort({ date: -1 });
+      openingBalance = prevDayEntry?.amount || 0;
+    }
+
+    // Fetch all transactions
+    const [
+      cashSales, 
+      cashExpenses, 
+      loans, 
+      receivings, 
+      deductions
+    ] = await Promise.all([
+      Sale.aggregate([
+        { 
+          $match: { 
+            paymentMethod: 'cash', 
+            date: { $gte: startOfDay, $lte: endOfDay } 
+          } 
+        }, 
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]),
+      Expense.aggregate([
+        { 
+          $match: { 
+            paymentMethod: 'cash', 
+            date: { $gte: startOfDay, $lte: endOfDay } 
+          } 
+        }, 
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]),
       Loans.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
       Receiving.find({ date: { $gte: startOfDay, $lte: endOfDay } }),
       getDeductions(startOfDay, endOfDay)
     ]);
 
+    // Calculate totals
     const totalInflows = cashSales[0]?.total || 0;
     const totalExpenses = cashExpenses[0]?.total || 0;
     const totalLoans = loans.reduce((sum, loan) => sum + (loan.remaining || 0), 0);
@@ -76,19 +119,22 @@ router.get('/', async (req, res) => {
     const totalDeliveries = Object.values(deductions.deliveries).reduce((a, b) => a + b, 0);
     const totalCompanies = Object.values(deductions.companies).reduce((a, b) => a + b, 0);
 
-    const currentBalance = openingBalance + totalInflows - totalExpenses - totalLoans - totalReceivings - totalDeliveries - totalCompanies;
+    // Calculate balances
+    const currentBalance = openingBalance + totalInflows - totalExpenses 
+      - totalLoans - totalReceivings - totalDeliveries - totalCompanies;
 
+    // Create next day's opening if needed
     const nextDayStart = new Date(startOfDay);
-    nextDayStart.setDate(startOfDay.getDate() + 1);
-    nextDayStart.setHours(0, 0, 0, 0); // Normalize
+    nextDayStart.setUTCDate(startOfDay.getUTCDate() + 1);
     
     if (!await OpeningBalance.findOne({ date: nextDayStart })) {
-      await OpeningBalance.create({ 
-        amount: currentBalance, 
-        date: nextDayStart 
+      await OpeningBalance.create({
+        amount: currentBalance,
+        date: nextDayStart
       });
     }
 
+    // Send response
     res.json({
       openingBalance,
       inflows: totalInflows,
@@ -102,6 +148,7 @@ router.get('/', async (req, res) => {
     });
 
   } catch (error) {
+    console.error('Error in balance route:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -109,7 +156,7 @@ router.get('/', async (req, res) => {
 router.post('/opening', async (req, res) => {
   try {
     const date = new Date(req.body.date);
-    date.setHours(0, 0, 0, 0); // Normalize to start of day
+    date.setUTCHours(0, 0, 0, 0); // Store as UTC midnight
 
     const savedBalance = await OpeningBalance.findOneAndUpdate(
       { date: date },
